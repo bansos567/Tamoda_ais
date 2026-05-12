@@ -1,40 +1,37 @@
-name: Build Tamoda Extension
+name: Java CI with Ant
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: recursive # Penting untuk menarik folder lib/
 
     - name: Set up JDK 8
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '8'
         distribution: 'temurin'
+        cache: ant
 
-    - name: Install Ant
-      run: sudo apt-get install ant
-
-    - name: Run Upgrade Script
+    - name: Ambil Library AI2
       run: |
         chmod +x upgrade-appinventor.sh
         ./upgrade-appinventor.sh
 
-    - name: Compile Extension (Ant)
+    - name: Build Extension
       run: ant extensions
 
-    - name: Simpan Hasil AIX
-      uses: actions/upload-artifact@v3
+    - name: Upload AIX ke Artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: TamodaLauncher-Build
+        name: TamodaLauncher-AIX
         path: out/*.aix
