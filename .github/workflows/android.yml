@@ -1,4 +1,4 @@
-name: Build Extension
+name: Build Tamoda Extension
 
 on:
   push:
@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
       with:
         submodules: recursive
 
@@ -24,16 +25,16 @@ jobs:
     - name: Install Ant
       run: sudo apt-get install ant
 
-    - name: Setup Dependencies
+    - name: Run Upgrade Script
       run: |
         chmod +x upgrade-appinventor.sh
         ./upgrade-appinventor.sh
 
-    - name: Build Extension
+    - name: Compile Extension (Ant)
       run: ant extensions
 
-    - name: Upload AIX Artifact
+    - name: Simpan Hasil AIX
       uses: actions/upload-artifact@v3
       with:
-        name: TamodaLauncher-AIX
+        name: TamodaLauncher-Build
         path: out/*.aix
