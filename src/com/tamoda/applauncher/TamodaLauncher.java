@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.ActivityNotFoundException;
+
+import com.google.appinventor.components.common.ComponentCategory;
 import com.google.appinventor.components.annotations.*;
 import com.google.appinventor.components.runtime.*;
 
