@@ -4,13 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.ActivityNotFoundException;
+import android.net.Uri;
 
 import com.google.appinventor.components.common.ComponentCategory;
 import com.google.appinventor.components.annotations.*;
 import com.google.appinventor.components.runtime.*;
 
-@DesignerComponent(version = 2,
-    description = "Launcher & Share Text ke Aplikasi (Tidak Nimpa Task)",
+@DesignerComponent(version = 4, 
+    description = "Launcher Anti-Nimpa: Setiap aksi dibuatkan Task terpisah di Recent Apps.",
     category = ComponentCategory.EXTENSION,
     nonVisible = true,
     iconName = "images/extension.png")
@@ -24,13 +25,31 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         this.context = container.$context();
     }
 
-    @SimpleFunction(description = "Buka aplikasi berdasarkan Package Name dengan Task terpisah.")
+    @SimpleFunction(description = "Buka link (YouTube/FB/Web) sebagai Task terpisah (Gak nimpa).")
+    public void BukaUrl(String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            // SAKTI: Gabungan flag ini bikin aplikasi terbuka di kartu terpisah di Recent Apps
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            
+            context.startActivity(intent);
+            BerhasilDibuka();
+        } catch (ActivityNotFoundException e) {
+            AplikasiTidakDitemukan("Browser/App Link");
+        }
+    }
+
+    @SimpleFunction(description = "Buka aplikasi lain sebagai Task terpisah (Gak nimpa).")
     public void BukaPindahAplikasi(String packageName) {
         PackageManager pm = context.getPackageManager();
         Intent intent = pm.getLaunchIntentForPackage(packageName);
 
         if (intent != null) {
+            // SAKTI: Paksa buat window baru di Recent Apps
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            
             context.startActivity(intent);
             BerhasilDibuka();
         } else {
@@ -38,17 +57,17 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         }
     }
 
-    @SimpleFunction(description = "Share teks langsung ke WhatsApp tanpa nimpa task.")
+    @SimpleFunction(description = "Share ke WhatsApp (Task terpisah).")
     public void ShareKeWhatsApp(String pesan) {
         shareTextToApp("com.whatsapp", pesan);
     }
 
-    @SimpleFunction(description = "Share teks langsung ke Telegram tanpa nimpa task.")
+    @SimpleFunction(description = "Share ke Telegram (Task terpisah).")
     public void ShareKeTelegram(String pesan) {
         shareTextToApp("org.telegram.messenger", pesan);
     }
     
-    @SimpleFunction(description = "Share teks/URL langsung ke Facebook tanpa nimpa task.")
+    @SimpleFunction(description = "Share ke Facebook (Task terpisah).")
     public void ShareKeFacebook(String pesan) {
         shareTextToApp("com.facebook.katana", pesan);
     }
@@ -59,7 +78,9 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         intent.setPackage(packageName);
         intent.putExtra(Intent.EXTRA_TEXT, pesan);
         
+        // SAKTI: Biar saat share, user bisa balik ke app kita lewat Recent Apps
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 
         try {
             context.startActivity(intent);
@@ -69,12 +90,12 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         }
     }
 
-    @SimpleEvent(description = "Tertrigger jika aplikasi berhasil dipanggil atau pesan di-share.")
+    @SimpleEvent(description = "Tertrigger jika aplikasi berhasil dipanggil.")
     public void BerhasilDibuka() {
         EventDispatcher.dispatchEvent(this, "BerhasilDibuka");
     }
 
-    @SimpleEvent(description = "Tertrigger jika package name tidak terinstall di HP user.")
+    @SimpleEvent(description = "Tertrigger jika aplikasi tidak ada.")
     public void AplikasiTidakDitemukan(String packageName) {
         EventDispatcher.dispatchEvent(this, "AplikasiTidakDitemukan", packageName);
     }
