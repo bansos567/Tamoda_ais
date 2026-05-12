@@ -1,0 +1,29 @@
+name: Build Tamoda Extension
+
+on:
+  push:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive' # Wajib agar dependensi App Inventor ikut terunduh
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8' # App Inventor/Kodular extension wajib pakai Java 8
+        distribution: 'temurin'
+
+    - name: Build Extension with Ant
+      run: ant
+
+    - name: Upload AIX File
+      uses: actions/upload-artifact@v3
+      with:
+        name: TamodaLauncher-Extension
+        path: out/*.aix
