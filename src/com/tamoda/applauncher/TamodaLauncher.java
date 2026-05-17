@@ -5,16 +5,21 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.ActivityNotFoundException;
 import android.net.Uri;
+// Ini import tambahan untuk fitur Timer/Waktu
+import android.os.Handler;
+import android.os.Looper;
 
 import com.google.appinventor.components.common.ComponentCategory;
 import com.google.appinventor.components.annotations.*;
 import com.google.appinventor.components.runtime.*;
 
-@DesignerComponent(version = 4, 
-    description = "Launcher Anti-Nimpa: Setiap aksi dibuatkan Task terpisah di Recent Apps.",
+@DesignerComponent(
+    version = 5, // Naik ke versi 5 biar Kodular langsung update
+    description = "Launcher Anti-Nimpa + Fitur MultiDelay Pintar untuk Jeda Iklan.",
     category = ComponentCategory.EXTENSION,
     nonVisible = true,
-    iconName = "images/extension.png")
+    iconName = "images/extension.png"
+)
 @SimpleObject(external = true)
 public class TamodaLauncher extends AndroidNonvisibleComponent {
 
@@ -25,11 +30,14 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         this.context = container.$context();
     }
 
+    // ==========================================
+    // FITUR BAWAAN: LAUNCHER ANTI-NIMPA
+    // ==========================================
+    
     @SimpleFunction(description = "Buka link (YouTube/FB/Web) sebagai Task terpisah (Gak nimpa).")
     public void BukaUrl(String url) {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            // SAKTI: Gabungan flag ini bikin aplikasi terbuka di kartu terpisah di Recent Apps
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             
@@ -46,7 +54,6 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         Intent intent = pm.getLaunchIntentForPackage(packageName);
 
         if (intent != null) {
-            // SAKTI: Paksa buat window baru di Recent Apps
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             
@@ -78,7 +85,6 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
         intent.setPackage(packageName);
         intent.putExtra(Intent.EXTRA_TEXT, pesan);
         
-        // SAKTI: Biar saat share, user bisa balik ke app kita lewat Recent Apps
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
 
@@ -98,5 +104,24 @@ public class TamodaLauncher extends AndroidNonvisibleComponent {
     @SimpleEvent(description = "Tertrigger jika aplikasi tidak ada.")
     public void AplikasiTidakDitemukan(String packageName) {
         EventDispatcher.dispatchEvent(this, "AplikasiTidakDitemukan", packageName);
+    }
+
+    // ==========================================
+    // FITUR BARU: MULTI DELAY (PENGGANTI CLOCK)
+    // ==========================================
+    
+    @SimpleFunction(description = "Mulai jeda waktu untuk tugas tertentu (Ms = Milidetik)")
+    public void StartDelay(final String taskName, int durationMs) {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                TimeFinished(taskName);
+            }
+        }, durationMs);
+    }
+
+    @SimpleEvent(description = "Event yang terpanggil saat waktu jeda habis")
+    public void TimeFinished(String taskName) {
+        EventDispatcher.dispatchEvent(this, "TimeFinished", taskName);
     }
 }
