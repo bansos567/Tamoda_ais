@@ -1,4 +1,4 @@
-Package com.tamoda.applauncher;
+package com.tamoda.applauncher;
 
 import android.content.Context;
 import android.content.Intent;
